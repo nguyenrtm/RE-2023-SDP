@@ -1,17 +1,19 @@
 from one_hot import OneHotEncoder
-from process_pkl import load_pkl
+from utils import get_trimmed_w2v_vectors, load_vocab
 from typing import Union, Iterable
 import spacy
 import torch
 
 class WordEmbedding:
-    def __init__(self, path='cache/w2v/w2v.pkl'):
-        self.word_dct = load_pkl(path)
+    def __init__(self, path='../cache/w2v/biocreative_fasttext_pm.npz'):
+        self.vectors = get_trimmed_w2v_vectors(path)
+        self.vocab = load_vocab('../cache/w2v/all_words.txt')
 
     def get_word_vector(self, word):
-        if word not in self.word_dct.keys():
-            return torch.zeros((1, 200))
-        return torch.tensor(self.word_dct[word])
+        if word not in self.vocab.keys():
+            return self.vectors[-1] # $UNK$ vector
+        else:
+            return torch.tensor(self.vectors[self.vocab[word]])
  
 
 class EdgeEmbedding:

@@ -1,8 +1,7 @@
-import time
 import codecs
 import numpy as np
 from nltk.corpus import wordnet as wn
-from nltk import WordNetLemmatizer
+import pickle as pkl
 
 
 def get_trimmed_w2v_vectors(filename):
@@ -45,3 +44,10 @@ def load_vocab_utf8(filename):
             d[word] = idx + 1  # preserve idx 0 for pad_tok
     return d
 
+def load_pkl(path):
+    with open(path, 'rb') as file:
+        return pkl.load(file)
+    
+def dump_pkl(obj, path):
+    with open(path, 'wb') as file:
+        pkl.dump(obj, file)
