@@ -81,10 +81,10 @@ class SentenceFeatureBuilder:
         
         return ent1_start_idx, ent1_end_idx, ent2_start_idx, ent2_end_idx
                 
-    def find_idx_start_given_offset(self, 
-                                    token_lst, 
+    def find_idx_start_given_offset(self,
+                                    text, 
                                     offset):
-        
+        token_lst = self.get_tokens(text)
         for i in range(len(token_lst) - 1):
             if offset >= token_lst[i][1] and offset < token_lst[i+1][1]:
                 return token_lst[i][2]
@@ -92,9 +92,9 @@ class SentenceFeatureBuilder:
         return len(token_lst) - 1
             
     def find_idx_end_given_offset(self, 
-                                  token_lst, 
+                                  text, 
                                   offset):
-        
+        token_lst = self.get_tokens(text)
         for i in range(len(token_lst) - 1):
             if offset >= token_lst[i][1] and offset - 1 < token_lst[i+1][1]:
                 return token_lst[i][2]
@@ -124,9 +124,8 @@ class SentenceFeatureBuilder:
         word = self.build_word_embedding(row)
         embedding = torch.hstack((word, pos, position))
         if self.crop_in_between > -1:
-            token_lst = self.get_tokens(row['text'])
-            ent1_start_idx = self.find_idx_start_given_offset(token_lst, offset=row['ent1_start'])
-            ent2_end_idx = self.find_idx_end_given_offset(token_lst, offset=row['ent2_end'])
+            ent1_start_idx = self.find_idx_start_given_offset(row['text'], offset=row['ent1_start'])
+            ent2_end_idx = self.find_idx_end_given_offset(row['text'], offset=row['ent2_end'])
 
             if ent1_start_idx == ent2_end_idx:
                 print(f"Warning: 2 entities in the same tokens in sentence {row['sent_id']}")

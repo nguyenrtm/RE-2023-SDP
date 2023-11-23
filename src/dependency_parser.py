@@ -1,10 +1,9 @@
-import spacy
 import networkx as nx
 from sentence_feature_builder import SentenceFeatureBuilder
 
 class DependencyParser:
-    def __init__(self):
-        self.nlp = spacy.load("en_core_sci_lg")
+    def __init__(self, nlp):
+        self.nlp = nlp
 
     def get_dependency_graph(self, text):
         doc = self.nlp(text)
