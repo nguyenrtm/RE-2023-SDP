@@ -82,9 +82,8 @@ class SentenceFeatureBuilder:
         return ent1_start_idx, ent1_end_idx, ent2_start_idx, ent2_end_idx
                 
     def find_idx_start_given_offset(self,
-                                    text, 
+                                    token_lst, 
                                     offset):
-        token_lst = self.get_tokens(text)
         for i in range(len(token_lst) - 1):
             if offset >= token_lst[i][1] and offset < token_lst[i+1][1]:
                 return token_lst[i][2]
@@ -92,9 +91,8 @@ class SentenceFeatureBuilder:
         return len(token_lst) - 1
             
     def find_idx_end_given_offset(self, 
-                                  text, 
+                                  token_lst, 
                                   offset):
-        token_lst = self.get_tokens(text)
         for i in range(len(token_lst) - 1):
             if offset >= token_lst[i][1] and offset - 1 < token_lst[i+1][1]:
                 return token_lst[i][2]
