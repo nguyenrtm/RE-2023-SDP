@@ -107,9 +107,6 @@ class SentenceFeatureBuilder:
             else:
                 tag_embedding = torch.vstack((tag_embedding, tag_ohe))
         return tag_embedding
-    
-    def padding(self, embedding):
-        return F.pad(embedding, (0, 0, 0, self.padding_size - embedding.shape[0]), mode="constant")
 
     def build_embedding(self, 
                         row):
@@ -126,17 +123,6 @@ class SentenceFeatureBuilder:
             embedding_dictionary[str(i)] = embedding[i]
             
         return embedding_dictionary
-    
-    def build_embedding_for_df(self, df):
-        from tqdm import tqdm
-        for i in tqdm(range(len(df))):
-            embedding = self.build_embedding(df.iloc[i])
-            if i == 0:
-                embeddings = embedding.unsqueeze(dim=0)
-            else:
-                embeddings = torch.vstack((embeddings, embedding.unsqueeze(dim=0)))
-        
-        return embeddings
     
     def build_label_for_df(self, df):
         for i in range(len(df)):

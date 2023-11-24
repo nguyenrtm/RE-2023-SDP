@@ -1,8 +1,10 @@
-from one_hot import OneHotEncoder
-from utils import get_trimmed_w2v_vectors, load_vocab
 from typing import Union, Iterable
 import spacy
 import torch
+
+from one_hot import OneHotEncoder
+from utils import get_trimmed_w2v_vectors, load_vocab
+from sentence_feature_builder import SentenceFeatureBuilder
 
 class WordEmbedding:
     def __init__(self, path='../cache/w2v/biocreative_fasttext_pm.npz'):
@@ -17,8 +19,8 @@ class WordEmbedding:
  
 
 class EdgeEmbedding:
-    def __init__(self):
-        self.nlp = spacy.load("en_core_sci_lg")
+    def __init__(self, nlp):
+        self.nlp = nlp
         self.labels = list(self.nlp.get_pipe("parser").labels)
         self.one_hot_encoder = OneHotEncoder([self.labels])
 
