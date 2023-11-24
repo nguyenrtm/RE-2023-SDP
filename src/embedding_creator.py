@@ -11,7 +11,7 @@ class WordEmbedding:
 
     def get_word_vector(self, word):
         if word not in self.vocab.keys():
-            return self.vectors[-1] # $UNK$ vector
+            return torch.tensor(self.vectors[-1]) # $UNK$ vector
         else:
             return torch.tensor(self.vectors[self.vocab[word]])
  

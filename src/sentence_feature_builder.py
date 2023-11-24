@@ -13,16 +13,13 @@ class SentenceFeatureBuilder:
         self.we = word_embedding_instance 
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between
-        self.pos_labels = self.preprocesser.nlp.get_pipe("tagger").labels
-        self.pos_ohe = OneHotEncoder([self.pos_labels])
+        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels
+        self.tag_ohe = OneHotEncoder([self.tag_labels])
 
-    def build_word_embedding(self, row):
-        token_lst = self.get_tokens(row['text'])
+    def build_word_embedding(self, token_lst):
         for tok in token_lst:
-            try:
-                word_embedding_tok = self.we.get_word_vector(tok[0].lower())
-            except:
-                word_embedding_tok = torch.zeros((1, 200))
+            word_embedding_tok = self.we.get_word_vector(tok[0].lower())
+
             if tok[2] == 0:
                 word_embedding = word_embedding_tok
             else:
@@ -99,42 +96,36 @@ class SentenceFeatureBuilder:
             
         return len(token_lst) - 1
     
-    def build_pos_embedding(self, text: str):
-        pos_lst = self.preprocesser.tag(text)
-        for i in range(len(pos_lst)):
-            if pos_lst[i] not in self.pos_labels:
-                pos_ohe = torch.zeros((len(self.pos_labels)))
+    def build_tag_embedding(self, tag_lst):
+        for i in range(len(tag_lst)):
+            if tag_lst[i] not in self.tag_labels:
+                tag_ohe = torch.zeros((len(self.tag_labels)))
             else:
-                pos_ohe = self.pos_ohe.one_hot(pos_lst[i])
+                tag_ohe = self.tag_ohe.one_hot(tag_lst[i])
             if i == 0:
-                pos_embedding = pos_ohe
+                tag_embedding = tag_ohe
             else:
-                pos_embedding = torch.vstack((pos_embedding, pos_ohe))
-        return pos_embedding
+                tag_embedding = torch.vstack((tag_embedding, tag_ohe))
+        return tag_embedding
     
     def padding(self, embedding):
         return F.pad(embedding, (0, 0, 0, self.padding_size - embedding.shape[0]), mode="constant")
 
     def build_embedding(self, 
                         row):
-        pos = self.build_pos_embedding(row['text'])
-        position = self.build_position_embedding(row)
-        word = self.build_word_embedding(row)
-        embedding = torch.hstack((word, pos, position))
-        if self.crop_in_between > -1:
-            ent1_start_idx = self.find_idx_start_given_offset(row['text'], offset=row['ent1_start'])
-            ent2_end_idx = self.find_idx_end_given_offset(row['text'], offset=row['ent2_end'])
+        embedding_dictionary = dict()
+        tag_lst = self.preprocesser.tag(row['text'])
+        token_lst = self.get_tokens(row['text'])
 
-            if ent1_start_idx == ent2_end_idx:
-                print(f"Warning: 2 entities in the same tokens in sentence {row['sent_id']}")
-            if ent1_start_idx < ent2_end_idx:
-                embedding = embedding[max(0, ent1_start_idx - self.crop_in_between):min(ent2_end_idx + 1 + self.crop_in_between, len(embedding) - 1)]
-            elif ent1_start_idx > ent2_end_idx:
-                embedding = embedding[max(0, ent2_end_idx - self.crop_in_between):min(ent1_start_idx + 1 + self.crop_in_between, len(embedding) - 1)]
-                
-        if self.padding_size > -1:
-            embedding = self.padding(embedding)
-        return embedding
+        tag = self.build_tag_embedding(tag_lst)
+        position = self.build_position_embedding(row)
+        word = self.build_word_embedding(token_lst)
+
+        embedding = torch.hstack((word, tag, position))
+        for i in range(len(token_lst)):
+            embedding_dictionary[str(i)] = embedding[i]
+            
+        return embedding_dictionary
     
     def build_embedding_for_df(self, df):
         from tqdm import tqdm

@@ -60,7 +60,7 @@ class DependencyParser:
         
         return path_with_dep
     
-    def get_sdp_with_dep_df(self, df, sfb, we):
+    def get_sdp_with_dep_df(self, df, sfb):
         sdp_with_dep = list()
         for i in tqdm(range(len(df))):
             row = df.iloc[i]
