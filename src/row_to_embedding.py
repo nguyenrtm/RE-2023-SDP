@@ -33,7 +33,10 @@ class RowToEmbedding:
         to_return = list()
         for i in tqdm(range(len(df))):
             row = df.iloc[i]
-            embedding = self.row_to_embedding(row)
-            to_return.append(embedding)
-        
+            try: 
+                embedding = self.row_to_embedding(row)
+                to_return.append(embedding)
+            except:
+                to_return.append(None)
+            
         return to_return
