@@ -15,6 +15,10 @@ class CustomDataset(Dataset):
                 self.labels = torch.vstack((self.labels[:i], self.labels[i+1:]))
             i += 1
 
+    def convert_float(self):
+        self.data = [x.to(torch.float32) for x in self.data]
+        self.labels = self.labels.to(torch.float32)
+
     def batch_padding(self, batch_size):
         current = 0
         to_return = []
