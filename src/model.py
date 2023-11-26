@@ -166,6 +166,7 @@ class Trainer:
             running_loss += loss.item()
 
         return running_loss
+
     
     def validate(self, validation_loader, loss_list):
         running_loss = 0.

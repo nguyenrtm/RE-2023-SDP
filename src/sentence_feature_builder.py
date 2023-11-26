@@ -13,7 +13,7 @@ class SentenceFeatureBuilder:
         self.we = word_embedding_instance 
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between
-        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels.append('_SP')
+        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels + ("_SP",)
         self.tag_ohe = OneHotEncoder([self.tag_labels])
 
     def build_word_embedding(self, token_lst):
