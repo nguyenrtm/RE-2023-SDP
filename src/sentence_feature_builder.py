@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 
 class SentenceFeatureBuilder:
-    def __init__(self, 
+    def __init__(self,
                  word_embedding_instance, 
                  padding_size: int = 200,
                  crop_in_between: int = 0):
@@ -13,7 +13,7 @@ class SentenceFeatureBuilder:
         self.we = word_embedding_instance 
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between
-        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels
+        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels.append('_SP')
         self.tag_ohe = OneHotEncoder([self.tag_labels])
 
     def build_word_embedding(self, token_lst):
@@ -123,13 +123,3 @@ class SentenceFeatureBuilder:
             embedding_dictionary[str(i)] = embedding[i]
             
         return embedding_dictionary
-    
-    def build_label_for_df(self, df):
-        for i in range(len(df)):
-            label = torch.tensor([df.iloc[i]['label']]).type(torch.FloatTensor)
-            if i == 0:
-                labels = label
-            else:
-                labels = torch.vstack((labels, label))
-        
-        return labels

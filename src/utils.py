@@ -1,4 +1,5 @@
 import codecs
+import torch
 import numpy as np
 from nltk.corpus import wordnet as wn
 import pickle as pkl
@@ -51,3 +52,13 @@ def load_pkl(path):
 def dump_pkl(obj, path):
     with open(path, 'wb') as file:
         pkl.dump(obj, file)
+
+def build_label_for_df(df):
+    for i in range(len(df)):
+        label = torch.tensor([df.iloc[i]['label']]).type(torch.FloatTensor)
+        if i == 0:
+            labels = label
+        else:
+            labels = torch.vstack((labels, label))
+    
+    return labels

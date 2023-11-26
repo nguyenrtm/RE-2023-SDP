@@ -22,9 +22,6 @@ class DependencyParser:
                 target_i):
         
         graph = self.get_dependency_graph(text)
-        source = source_i
-        target = target_i
-
         return nx.shortest_path(graph, source=source_i, target=target_i)
     
     def get_edge_dep(self, text, source_i, target_i):

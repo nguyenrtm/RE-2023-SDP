@@ -23,7 +23,7 @@ class RowToEmbedding:
             embedding = torch.cat((ent1_embedding, edge_embedding, ent2_embedding))
             
             if i == 0:
-                to_return = embedding
+                to_return = embedding.unsqueeze(0)
             else:
                 to_return = torch.vstack((to_return, embedding))
 
