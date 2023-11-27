@@ -112,6 +112,7 @@ class Trainer:
                  conv1_length: int = 2,
                  conv2_length: int = 3,
                  conv3_length: int = 4,
+                 lr: float = 0.001,
                  device: str = 'cpu'):
         
         self.model = Model(word_embedding_size, 
@@ -127,7 +128,7 @@ class Trainer:
                            conv3_length).to(device)
         
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.device = device
         self.train_loss_list = []
         self.val_loss_list = []

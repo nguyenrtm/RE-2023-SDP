@@ -1,8 +1,6 @@
 from spacy_features import SpacyFeatures
 from one_hot import OneHotEncoder
 import torch
-import torch.nn.functional as F
-
 
 class SentenceFeatureBuilder:
     def __init__(self,

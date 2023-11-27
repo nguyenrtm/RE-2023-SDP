@@ -7,10 +7,15 @@ class RowToEmbedding:
         self.ee = ee
         self.dp = dp
 
-    def row_to_embedding(self, row):
-        path = self.dp.get_sdp_with_dep(text=row['text'],
-                                       source_i=self.sfb.return_idx(row)[0],
-                                       target_i=self.sfb.return_idx(row)[3])
+    def row_to_embedding(self, row, option="full"):
+        if option == "full":
+            path = self.dp.get_sdp_with_dep(text=row['text'],
+                                        source_i=self.sfb.return_idx(row)[0],
+                                        target_i=self.sfb.return_idx(row)[3])
+        elif option == "notfull":
+            path = self.dp.get_sdp_with_dep(text=row['text'],
+                                        source_i=self.sfb.return_idx(row)[1],
+                                        target_i=self.sfb.return_idx(row)[2])
         
         edge_one_hot = self.ee.path_with_dep_to_tensor(path)
         
