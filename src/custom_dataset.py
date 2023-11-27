@@ -13,7 +13,8 @@ class CustomDataset(Dataset):
             if self.data[i] == None:
                 self.data.pop(i)
                 self.labels = torch.vstack((self.labels[:i], self.labels[i+1:]))
-            i += 1
+            else:
+                i += 1
 
     def convert_float(self):
         self.data = [x.to(torch.float32) for x in self.data]
@@ -25,7 +26,6 @@ class CustomDataset(Dataset):
 
         while current + batch_size < len(self.data):
             batch = self.data[current:current+batch_size]
-
             max_len_in_batch = max([x.shape[0] for x in batch])
             
             for i in range(len(batch)):
