@@ -22,10 +22,16 @@ class Model(nn.Module):
         
         super(Model, self).__init__()
 
-        self.normalize_tag = nn.Linear(in_features=tag_embedding_size, 
+        self.normalize_tag1 = nn.Linear(in_features=tag_embedding_size, 
                                        out_features=tag_embedding_normalized_size)
         
-        self.normalize_position = nn.Linear(in_features=position_embedding_size, 
+        self.normalize_position1 = nn.Linear(in_features=position_embedding_size, 
+                                            out_features=position_embedding_normalized_size)
+        
+        self.normalize_tag2 = nn.Linear(in_features=tag_embedding_size, 
+                                       out_features=tag_embedding_normalized_size)
+        
+        self.normalize_position2 = nn.Linear(in_features=position_embedding_size, 
                                             out_features=position_embedding_normalized_size)
         
         self.normalize_edge = nn.Linear(in_features=edge_embedding_size,
@@ -71,11 +77,11 @@ class Model(nn.Module):
         tag_embedding_ent2 = x[:, :, 703:753]
         position_embedding_ent2 = x[:, :, 753:757]
 
-        tag_embedding_ent1 = self.normalize_tag(tag_embedding_ent1)
-        position_embedding_ent1 = self.normalize_position(position_embedding_ent1)
+        tag_embedding_ent1 = self.normalize_tag1(tag_embedding_ent1)
+        position_embedding_ent1 = self.normalize_position1(position_embedding_ent1)
 
-        tag_embedding_ent2 = self.normalize_tag(tag_embedding_ent2)
-        position_embedding_ent2 = self.normalize_position(position_embedding_ent2)
+        tag_embedding_ent2 = self.normalize_tag2(tag_embedding_ent2)
+        position_embedding_ent2 = self.normalize_position2(position_embedding_ent2)
 
         edge_embedding = self.normalize_edge(edge_embedding)
 

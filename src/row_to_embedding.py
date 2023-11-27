@@ -7,7 +7,7 @@ class RowToEmbedding:
         self.ee = ee
         self.dp = dp
 
-    def row_to_embedding(self, row, option="full"):
+    def row_to_embedding(self, row, option):
         if option == "full":
             path = self.dp.get_sdp_with_dep(text=row['text'],
                                         source_i=self.sfb.return_idx(row)[0],
@@ -34,12 +34,12 @@ class RowToEmbedding:
 
         return to_return
     
-    def row_to_embedding_df(self, df):
+    def row_to_embedding_df(self, df, option):
         to_return = list()
         for i in tqdm(range(len(df))):
             row = df.iloc[i]
             try: 
-                embedding = self.row_to_embedding(row)
+                embedding = self.row_to_embedding(row, option)
                 to_return.append(embedding)
             except:
                 to_return.append(None)
