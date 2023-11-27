@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+
+from eval import evaluate_bc5
 
 class Model(nn.Module):
     def __init__(self, 
