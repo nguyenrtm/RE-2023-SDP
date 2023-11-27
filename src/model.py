@@ -2,10 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
-import matplotlib.pyplot as plt
-
-import torch
-import torch.nn as nn
+import matplotlib.pyplot as plt 
 
 class Model(nn.Module):
     def __init__(self, 
@@ -132,6 +129,15 @@ class Trainer:
         self.device = device
         self.train_loss_list = []
         self.val_loss_list = []
+        self.p = []
+        self.r = []
+        self.f = []
+        self.intra_p = []
+        self.intra_r = []
+        self.intra_f = []
+        self.inter_p = []
+        self.inter_r = []
+        self.inter_f = []
         
     def convert_label_to_2d(self, batch_label):
         i = 0
@@ -189,16 +195,27 @@ class Trainer:
         for i in range(len(labels)):
             if labels[i].cpu() == 1:
                 true_pred.append(i)
-        
 
         f1 = BinaryF1Score().to(self.device)(predictions, labels)
         p = BinaryPrecision().to(self.device)(predictions, labels)
         r = BinaryRecall().to(self.device)(predictions, labels)
-
-        print('F1: {:>15} P: {:>15} R: {:>15} Loss: {:>15}'.format(f1, p, r, running_loss))
         
-        loss_list.append([running_loss, f1, p, r])
+        loss_list.append([running_loss, f1.item(), p.item(), r.item()])
         return predictions
+    
+    def eval_bc5(self, pred, df):
+        dct, lst = self.convert_pred_to_lst(pred, df)
+        return_tuple = evaluate_bc5(lst)
+        self.p.append(return_tuple[0][0])
+        self.r.append(return_tuple[0][1])
+        self.f.append(return_tuple[0][2])
+        self.intra_p.append(return_tuple[1][0])
+        self.intra_r.append(return_tuple[1][1])
+        self.intra_f.append(return_tuple[1][2])
+        self.inter_p.append(return_tuple[2][0])
+        self.inter_r.append(return_tuple[2][1])
+        self.inter_f.append(return_tuple[2][2])
+        return return_tuple
 
     
     def train(self, training_loader, validation_loader, num_epochs):
@@ -212,8 +229,10 @@ class Trainer:
             print("===== Validation =====")
             print("Training set:")
             pred_train = self.validate(training_loader, self.train_loss_list)
+            print(self.train_loss_list[-1])
             print("Validation set:")
             pred_val = self.validate(validation_loader, self.val_loss_list)
+            print(self.val_loss_list[-1])
         return pred_train, pred_val
 
     def convert_pred_to_lst(self, pred, df):
@@ -255,46 +274,21 @@ class Trainer:
 
         return dct, lst
     
-    def plot_loss(self):
+    def plot_train_test(self, lst_a, lst_b, title):
         plt.figure(figsize=(10,5))
-        plt.title("Loss")
-        plt.plot([x[0] for x in self.train_loss_list],label="Train")
-        plt.plot([x[0] for x in self.val_loss_list],label="Val")
+        plt.title(title)
+        plt.plot(lst_a,label="Train")
+        plt.plot(lst_b,label="Test")
         plt.xlabel("iterations")
-        plt.ylabel("Loss")
+        plt.ylabel(title)
         plt.legend()
         plt.show()
-
-    def plot_f1(self):
+        
+    def plot(self, lst_a, title):
         plt.figure(figsize=(10,5))
-        plt.title("F")
-        plt.plot([x[1] for x in self.train_loss_list],label="Train")
-        plt.plot([x[1] for x in self.val_loss_list],label="Val")
+        plt.title(title)
+        plt.plot(lst_a,label="Test")
         plt.xlabel("iterations")
-        plt.ylabel("F")
+        plt.ylabel(title)
         plt.legend()
         plt.show()
-
-    def plot_p(self):
-        plt.figure(figsize=(10,5))
-        plt.title("F")
-        plt.plot([x[2] for x in self.train_loss_list],label="Train")
-        plt.plot([x[2] for x in self.val_loss_list],label="Val")
-        plt.xlabel("iterations")
-        plt.ylabel("P")
-        plt.legend()
-        plt.show()
-
-    def plot_r(self):
-        plt.figure(figsize=(10,5))
-        plt.title("R")
-        plt.plot([x[3] for x in self.train_loss_list],label="Train")
-        plt.plot([x[3] for x in self.val_loss_list],label="Val")
-        plt.xlabel("iterations")
-        plt.ylabel("R")
-        plt.legend()
-        plt.show()
-
-# test dataloader
-# test kien truc, reshape
-# test batch padding
