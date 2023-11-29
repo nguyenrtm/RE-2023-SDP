@@ -13,17 +13,6 @@ class SentenceFeatureBuilder:
         self.crop_in_between = crop_in_between
         self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels
         self.tag_ohe = OneHotEncoder([self.tag_labels])
-
-    # def build_word_embedding(self, token_lst):
-    #     for tok in token_lst:
-    #         word_embedding_tok = self.we.get_word_vector(tok[0].lower())
-
-    #         if tok[2] == 0:
-    #             word_embedding = word_embedding_tok
-    #         else:
-    #             word_embedding = torch.vstack((word_embedding, word_embedding_tok))
-        
-    #     return word_embedding
         
     def get_position_embedding_given_ent(self, 
                                          ent_start: int, 
@@ -53,8 +42,6 @@ class SentenceFeatureBuilder:
         text_length = token_lst[-1][2]
         pos_ent1 = torch.tensor(self.get_position_embedding_given_ent(ent1_start_idx, ent1_end_idx, text_length)).view(-1, 1)
         pos_ent2 = torch.tensor(self.get_position_embedding_given_ent(ent2_start_idx, ent2_end_idx, text_length)).view(-1, 1)
-        pos_ent1 = pos_ent1 / (len(token_lst) / 2.)
-        pos_ent2 = pos_ent2 / (len(token_lst) / 2.)
         zero_ent1 = torch.zeros((len(token_lst), 1))
         zero_ent1[ent1_start_idx] = 1.
         zero_ent1[ent1_end_idx] = 1.
@@ -93,18 +80,6 @@ class SentenceFeatureBuilder:
                 return token_lst[i][2]
             
         return len(token_lst) - 1
-    
-    # def build_tag_embedding(self, tag_lst):
-    #     for i in range(len(tag_lst)):
-    #         if tag_lst[i] not in self.tag_labels:
-    #             tag_ohe = torch.zeros((len(self.tag_labels)))
-    #         else:
-    #             tag_ohe = self.tag_ohe.one_hot(tag_lst[i])
-    #         if i == 0:
-    #             tag_embedding = tag_ohe
-    #         else:
-    #             tag_embedding = torch.vstack((tag_embedding, tag_ohe))
-    #     return tag_embedding
 
     def build_embedding(self, 
                         row):
@@ -114,6 +89,6 @@ class SentenceFeatureBuilder:
         position = self.build_position_embedding(row)
 
         for i in range(len(token_lst)):
-            embedding_dictionary[str(i)] = (token_lst[i], tag_lst[i], position[i])
+            embedding_dictionary[str(i)] = (token_lst[i][0], tag_lst[i], position[i])
             
         return embedding_dictionary
