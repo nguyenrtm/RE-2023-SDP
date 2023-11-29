@@ -19,7 +19,6 @@ class RowToEmbedding:
                                             target_i=self.sfb.return_idx(row)[2])
 
         word_embedding_dictionary = self.sfb.build_embedding(row)
-        print(path)
 
         for i in range(len(path)):
             ent1 = word_embedding_dictionary[str(path[i][0])]
