@@ -10,7 +10,6 @@ class DependencyParser:
         for token in doc:
             for child in token.children:
                 edges.append((token.i, child.i))
-        print(edges)
         graph = nx.Graph(edges)
 
         return graph
