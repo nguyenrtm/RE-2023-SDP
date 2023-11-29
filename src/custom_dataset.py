@@ -16,10 +16,6 @@ class CustomDataset(Dataset):
             else:
                 i += 1
 
-    def convert_float(self):
-        self.data = [x.to(torch.float32) for x in self.data]
-        self.labels = self.labels.to(torch.float32)
-
     def batch_padding(self, batch_size):
         current = 0
         to_return = []
@@ -29,7 +25,10 @@ class CustomDataset(Dataset):
             max_len_in_batch = max([x.shape[0] for x in batch])
             
             for i in range(len(batch)):
-                tmp = F.pad(batch[i], (0, 0, 0, max_len_in_batch - batch[i].shape[0]), "constant", 0)
+                for _ in range(max_len_in_batch - batch[i].shape[0]):
+                    batch[i].append([(' ', 'PAD', torch.tensor([0., 0., 0., 0.])), 
+                                     (' ', ' '),
+                                     (' ', 'PAD', torch.tensor([0., 0., 0., 0.]))])
                 to_return.append(tmp)
                 
             current += batch_size
