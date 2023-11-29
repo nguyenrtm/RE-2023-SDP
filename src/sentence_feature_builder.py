@@ -11,19 +11,19 @@ class SentenceFeatureBuilder:
         self.we = word_embedding_instance 
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between
-        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels + ("_SP",)
+        self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels
         self.tag_ohe = OneHotEncoder([self.tag_labels])
 
-    def build_word_embedding(self, token_lst):
-        for tok in token_lst:
-            word_embedding_tok = self.we.get_word_vector(tok[0].lower())
+    # def build_word_embedding(self, token_lst):
+    #     for tok in token_lst:
+    #         word_embedding_tok = self.we.get_word_vector(tok[0].lower())
 
-            if tok[2] == 0:
-                word_embedding = word_embedding_tok
-            else:
-                word_embedding = torch.vstack((word_embedding, word_embedding_tok))
+    #         if tok[2] == 0:
+    #             word_embedding = word_embedding_tok
+    #         else:
+    #             word_embedding = torch.vstack((word_embedding, word_embedding_tok))
         
-        return word_embedding
+    #     return word_embedding
         
     def get_position_embedding_given_ent(self, 
                                          ent_start: int, 
@@ -94,30 +94,26 @@ class SentenceFeatureBuilder:
             
         return len(token_lst) - 1
     
-    def build_tag_embedding(self, tag_lst):
-        for i in range(len(tag_lst)):
-            if tag_lst[i] not in self.tag_labels:
-                tag_ohe = torch.zeros((len(self.tag_labels)))
-            else:
-                tag_ohe = self.tag_ohe.one_hot(tag_lst[i])
-            if i == 0:
-                tag_embedding = tag_ohe
-            else:
-                tag_embedding = torch.vstack((tag_embedding, tag_ohe))
-        return tag_embedding
+    # def build_tag_embedding(self, tag_lst):
+    #     for i in range(len(tag_lst)):
+    #         if tag_lst[i] not in self.tag_labels:
+    #             tag_ohe = torch.zeros((len(self.tag_labels)))
+    #         else:
+    #             tag_ohe = self.tag_ohe.one_hot(tag_lst[i])
+    #         if i == 0:
+    #             tag_embedding = tag_ohe
+    #         else:
+    #             tag_embedding = torch.vstack((tag_embedding, tag_ohe))
+    #     return tag_embedding
 
     def build_embedding(self, 
                         row):
         embedding_dictionary = dict()
         tag_lst = self.preprocesser.tag(row['text'])
         token_lst = self.get_tokens(row['text'])
-
-        tag = self.build_tag_embedding(tag_lst)
         position = self.build_position_embedding(row)
-        word = self.build_word_embedding(token_lst)
 
-        embedding = torch.hstack((word, tag, position))
         for i in range(len(token_lst)):
-            embedding_dictionary[str(i)] = embedding[i]
+            embedding_dictionary[str(i)] = (token_lst[i], tag_lst[i], position[i])
             
         return embedding_dictionary

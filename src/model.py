@@ -4,23 +4,32 @@ import torch.optim as optim
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 import matplotlib.pyplot as plt
 
+from one_hot import OneHotEncoder
+
 from eval import evaluate_bc5
 
 class Model(nn.Module):
     def __init__(self, 
-                 word_embedding_size: int,
-                 tag_embedding_size: int, 
-                 tag_embedding_normalized_size: int,
-                 position_embedding_size: int,
-                 position_embedding_normalized_size: int,
-                 edge_embedding_size: int,
-                 edge_embedding_normalized_size: int,
+                 we,
+                 sf,
+                 word_embedding_size: int = 300,
+                 tag_embedding_size: int = 50, 
+                 tag_embedding_normalized_size: int = 20,
+                 position_embedding_size: int = 4,
+                 position_embedding_normalized_size: int = 20,
+                 edge_embedding_size: int = 50,
+                 edge_embedding_normalized_size: int = 20,
                  conv_out_channels: int = 16,
                  conv1_length: int = 2,
                  conv2_length: int = 3,
-                 conv3_length: int = 4):
+                 conv3_length: int = 4
+                 ):
         
         super(Model, self).__init__()
+
+        self.w2v = nn.Embedding.from_pretrained(torch.tensor(we.vectors))
+        self.one_hot_tag = OneHotEncoder([list(sf.nlp.get_pipe("tagger").labels)])
+        self.one_hot_edge = OneHotEncoder([list(sf.nlp.get_pipe("parser").labels)])
 
         self.normalize_tag1 = nn.Linear(in_features=tag_embedding_size, 
                                        out_features=tag_embedding_normalized_size)
@@ -67,6 +76,10 @@ class Model(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
+            
+
+
+
         word_embedding_ent1 = x[:, :, :300]
         tag_embedding_ent1 = x[:, :, 300:350]
         position_embedding_ent1 = x[:, :, 350:354]

@@ -1,4 +1,3 @@
-import torch
 from tqdm import tqdm
 
 class RowToEmbedding:
@@ -8,29 +7,25 @@ class RowToEmbedding:
         self.dp = dp
 
     def row_to_embedding(self, row, option):
+        to_return = list()
+
         if option == "full":
             path = self.dp.get_sdp_with_dep(text=row['text'],
-                                        source_i=self.sfb.return_idx(row)[0],
-                                        target_i=self.sfb.return_idx(row)[3])
+                                            source_i=self.sfb.return_idx(row)[0],
+                                            target_i=self.sfb.return_idx(row)[3])
         elif option == "notfull":
             path = self.dp.get_sdp_with_dep(text=row['text'],
-                                        source_i=self.sfb.return_idx(row)[1],
-                                        target_i=self.sfb.return_idx(row)[2])
-        
-        edge_one_hot = self.ee.path_with_dep_to_tensor(path)
-        
+                                            source_i=self.sfb.return_idx(row)[1],
+                                            target_i=self.sfb.return_idx(row)[2])
+
         word_embedding_dictionary = self.sfb.build_embedding(row)
 
         for i in range(len(path)):
-            ent1_embedding = word_embedding_dictionary[str(path[i][0])]
-            ent2_embedding = word_embedding_dictionary[str(path[i][2])]
-            edge_embedding = edge_one_hot[i]
-            embedding = torch.cat((ent1_embedding, edge_embedding, ent2_embedding))
+            ent1 = word_embedding_dictionary[str(path[i][0][1])]
+            ent2 = word_embedding_dictionary[str(path[i][2][1])]
+            embedding = (ent1, path[i][1], ent2)
             
-            if i == 0:
-                to_return = embedding.unsqueeze(0)
-            else:
-                to_return = torch.vstack((to_return, embedding))
+            to_return.append(embedding)
 
         return to_return
     

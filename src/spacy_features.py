@@ -2,7 +2,7 @@ import spacy
 from spacy.attrs import ORTH
 
 class SpacyFeatures:
-    def __init__(self, spacy_model="en_core_sci_lg"):
+    def __init__(self, spacy_model="en_core_web_lg"):
         self.nlp = spacy.load(spacy_model)
         self.nlp.tokenizer.add_special_case(u'+/-', [{ORTH: u'+/-'}])
         self.nlp.tokenizer.add_special_case("mg.", [{ORTH: "mg."}])
