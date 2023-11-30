@@ -67,3 +67,36 @@ def get_lookup(path):
     with open(path, 'r') as file:
         f = file.read().split('\n')
     return {f[i]: i for i in range(len(f))}
+
+def lookup(word, dct):
+    try: 
+        idx = dct[word]
+    except:
+        idx = 0
+    return idx
+
+def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, pos_lookup):
+    if sent == None:
+        return None
+    to_return = list()
+    i = 0
+    for dp in sent:
+        word1_idx = lookup(dp[0][0], vocab_lookup)
+        word2_idx = lookup(dp[2][0], vocab_lookup)
+        tag1_idx = lookup(dp[0][1], tag_lookup)
+        tag2_idx = lookup(dp[2][1], tag_lookup)
+        direction_idx = lookup(dp[1][0], direction_lookup)
+        edge_idx = lookup(dp[1][1], direction_lookup)
+        pos1 = dp[0][2]
+        pos2 = dp[2][2]
+        v = torch.tensor([word1_idx, tag1_idx, direction_idx, edge_idx, word2_idx, tag2_idx])
+        v = torch.hstack((v[:2], pos1, v[2:6], pos2))
+        to_return.append(v)
+        i += 1
+    return to_return
+
+def get_idx_dataset(data):
+    tmp = list()
+    for i in data:
+        tmp.append(get_idx(i))
+    return tmp
