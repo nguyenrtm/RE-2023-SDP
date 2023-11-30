@@ -26,9 +26,9 @@ class CustomDataset(Dataset):
             
             for i in range(len(batch)):
                 for _ in range(max_len_in_batch - len(batch[i])):
-                    batch[i].append([(' ', 'PAD', torch.tensor([0., 0., 0., 0.])), 
-                                     (' ', ' '),
-                                     (' ', 'PAD', torch.tensor([0., 0., 0., 0.]))])
+                    batch[i].append([('', ' ', torch.tensor([0., 0., 0., 0.])), 
+                                     ('', ' '),
+                                     ('', ' ', torch.tensor([0., 0., 0., 0.]))])
                 
             current += batch_size
 
