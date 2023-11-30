@@ -4,106 +4,88 @@ import torch.optim as optim
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 import matplotlib.pyplot as plt
 
-from one_hot import OneHotEncoder
-
 from eval import evaluate_bc5
 
 class Model(nn.Module):
-    def __init__(self, 
+    def __init__(self,
                  we,
-                 sf,
                  word_embedding_size: int = 300,
-                 tag_embedding_size: int = 50, 
-                 tag_embedding_normalized_size: int = 20,
-                 position_embedding_size: int = 4,
-                 position_embedding_normalized_size: int = 20,
-                 edge_embedding_size: int = 50,
-                 edge_embedding_normalized_size: int = 20,
-                 conv_out_channels: int = 16,
+                 tag_number: int = 51,
+                 tag_embedding_size: int = 20,
+                 position_number: int = 4,
+                 position_embedding_size: int = 20,
+                 direction_number: int = 3,
+                 direction_embedding_size: int = 5,
+                 edge_number: int = 46,
+                 edge_embedding_size: int = 20,
+                 conv1_out_channels: int = 16,
+                 conv2_out_channels: int = 16,
+                 conv3_out_channels: int = 16,
                  conv1_length: int = 2,
                  conv2_length: int = 3,
                  conv3_length: int = 4
                  ):
-        
+
         super(Model, self).__init__()
 
         self.w2v = nn.Embedding.from_pretrained(torch.tensor(we.vectors))
-        self.one_hot_tag = OneHotEncoder([list(sf.nlp.get_pipe("tagger").labels)])
-        self.one_hot_edge = OneHotEncoder([list(sf.nlp.get_pipe("parser").labels)])
+        self.tag_embedding = nn.Embedding(tag_number, tag_embedding_size, padding_idx=0)
+        self.direction_embedding = nn.Embedding(direction_number, direction_embedding_size, padding_idx=0)
+        self.edge_embedding = nn.Embedding(edge_number, edge_embedding_size, padding_idx=0)
 
-        self.normalize_tag1 = nn.Linear(in_features=tag_embedding_size, 
-                                       out_features=tag_embedding_normalized_size)
-        
-        self.normalize_position1 = nn.Linear(in_features=position_embedding_size, 
-                                            out_features=position_embedding_normalized_size)
-        
-        self.normalize_tag2 = nn.Linear(in_features=tag_embedding_size, 
-                                       out_features=tag_embedding_normalized_size)
-        
-        self.normalize_position2 = nn.Linear(in_features=position_embedding_size, 
-                                            out_features=position_embedding_normalized_size)
-        
-        self.normalize_edge = nn.Linear(in_features=edge_embedding_size,
-                                        out_features=edge_embedding_normalized_size)
+        self.normalize_position = nn.Linear(in_features=position_number,
+                                             out_features=position_embedding_size)
         
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=1,
-                      out_channels=conv_out_channels,
-                      kernel_size=(conv1_length, word_embedding_size * 2 + tag_embedding_normalized_size * 2 + position_embedding_normalized_size * 2 + edge_embedding_normalized_size),
-                      stride=1),
+                      out_channels=conv1_out_channels,
+                      kernel_size=(conv1_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      stride=1,
+                      bias=False),
             nn.ReLU()
         )
-        
+
         self.conv2 = nn.Sequential(
             nn.Conv2d(in_channels=1,
-                      out_channels=conv_out_channels,
-                      kernel_size=(conv2_length, word_embedding_size * 2 + tag_embedding_normalized_size * 2 + position_embedding_normalized_size * 2 + edge_embedding_normalized_size),
-                      stride=1),
+                      out_channels=conv2_out_channels,
+                      kernel_size=(conv2_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      stride=1,
+                      bias=False),
             nn.ReLU()
         )
-        
+
         self.conv3 = nn.Sequential(
             nn.Conv2d(in_channels=1,
-                      out_channels=conv_out_channels,
-                      kernel_size=(conv3_length, word_embedding_size * 2 + tag_embedding_normalized_size * 2 + position_embedding_normalized_size * 2 + edge_embedding_normalized_size),
-                      stride=1),
+                      out_channels=conv3_out_channels,
+                      kernel_size=(conv3_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      stride=1,
+                      bias=False),
             nn.ReLU()
         )
-        
+
         self.relu = nn.ReLU()
-        self.dense_to_tag = nn.Linear(in_features=3 * conv_out_channels,
+        self.dense_to_tag = nn.Linear(in_features=conv1_out_channels + conv2_out_channels + conv3_out_channels,
                                       out_features=2)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-            
+        word_embedding_ent1 = self.w2v(x[:, :, 0].long())
+        tag_embedding_ent1 = self.tag_embedding(x[:, :, 1].long())
+        position_embedding_ent1 = self.normalize_position(x[:, :, 2:6])
 
+        direction_embedding = self.direction_embedding(x[:, :, 6].long())
+        edge_embedding = self.edge_embedding(x[:, :, 7].long())
 
-
-        word_embedding_ent1 = x[:, :, :300]
-        tag_embedding_ent1 = x[:, :, 300:350]
-        position_embedding_ent1 = x[:, :, 350:354]
-
-        edge_embedding = x[:, :, 354:403]
-
-        word_embedding_ent2 = x[:, :, 403:703]
-        tag_embedding_ent2 = x[:, :, 703:753]
-        position_embedding_ent2 = x[:, :, 753:757]
-
-        tag_embedding_ent1 = self.normalize_tag1(tag_embedding_ent1)
-        position_embedding_ent1 = self.normalize_position1(position_embedding_ent1)
-
-        tag_embedding_ent2 = self.normalize_tag2(tag_embedding_ent2)
-        position_embedding_ent2 = self.normalize_position2(position_embedding_ent2)
-
-        edge_embedding = self.normalize_edge(edge_embedding)
+        word_embedding_ent2 = self.w2v(x[:, :, 8].long())
+        tag_embedding_ent2 = self.tag_embedding(x[:, :, 9].long())
+        position_embedding_ent2 = self.normalize_position(x[:, :, 10:14])
 
         x = torch.cat((word_embedding_ent1, tag_embedding_ent1, position_embedding_ent1,
-                       edge_embedding,
-                       word_embedding_ent2, tag_embedding_ent2, position_embedding_ent2), dim=2)
-        
+                       direction_embedding, edge_embedding,
+                       word_embedding_ent2, tag_embedding_ent2, position_embedding_ent2), dim=2).float()
+
         x = x.unsqueeze(1)
-        
+
         x1 = self.conv1(x)
         x2 = self.conv2(x)
         x3 = self.conv3(x)
@@ -111,37 +93,47 @@ class Model(nn.Module):
         x1 = torch.max(x1.squeeze(dim=3), dim=2)[0]
         x2 = torch.max(x2.squeeze(dim=3), dim=2)[0]
         x3 = torch.max(x3.squeeze(dim=3), dim=2)[0]
-        
+
         x = torch.cat((x1, x2, x3), dim=1).squeeze()
         x = self.dense_to_tag(x)
         x = self.softmax(x)
-        
+
         return x
 
 class Trainer:
     def __init__(self,
-                 word_embedding_size: int,
-                 tag_embedding_size: int, 
-                 tag_embedding_normalized_size: int, 
-                 position_embedding_size: int,
-                 position_embedding_normalized_size: int,
-                 edge_embedding_size: int,
-                 edge_embedding_normalized_size: int,
-                 conv_out_channels: int = 16,
+                 we,
+                 lr,
+                 word_embedding_size: int = 300,
+                 tag_number: int = 51,
+                 tag_embedding_size: int = 20,
+                 position_number: int = 4,
+                 position_embedding_size: int = 20,
+                 direction_number: int = 3,
+                 direction_embedding_size: int = 5,
+                 edge_number: int = 46,
+                 edge_embedding_size: int = 20,
+                 conv1_out_channels: int = 16,
+                 conv2_out_channels: int = 16,
+                 conv3_out_channels: int = 16,
                  conv1_length: int = 2,
                  conv2_length: int = 3,
                  conv3_length: int = 4,
-                 lr: float = 0.001,
-                 device: str = 'cpu'):
+                 device='cpu'):
         
-        self.model = Model(word_embedding_size, 
+        self.model = Model(we,
+                           word_embedding_size, 
+                           tag_number,
                            tag_embedding_size, 
-                           tag_embedding_normalized_size, 
+                           position_number,
                            position_embedding_size,
-                           position_embedding_normalized_size,
+                           direction_number,
+                           direction_embedding_size,
+                           edge_number,
                            edge_embedding_size,
-                           edge_embedding_normalized_size,
-                           conv_out_channels,
+                           conv1_out_channels,
+                           conv2_out_channels,
+                           conv3_out_channels,
                            conv1_length,
                            conv2_length,
                            conv3_length).to(device)
