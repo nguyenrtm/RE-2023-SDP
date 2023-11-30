@@ -12,7 +12,6 @@ class SentenceFeatureBuilder:
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between
         self.tag_labels = self.preprocesser.nlp.get_pipe("tagger").labels
-        self.tag_ohe = OneHotEncoder([self.tag_labels])
         
     def get_position_embedding_given_ent(self, 
                                          ent_start: int, 

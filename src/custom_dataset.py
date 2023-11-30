@@ -22,25 +22,24 @@ class CustomDataset(Dataset):
 
         while current + batch_size < len(self.data):
             batch = self.data[current:current+batch_size]
-            max_len_in_batch = max([x.shape[0] for x in batch])
+            max_len_in_batch = max([len(x) for x in batch])
             
             for i in range(len(batch)):
-                for _ in range(max_len_in_batch - batch[i].shape[0]):
+                for _ in range(max_len_in_batch - len(batch[i])):
                     batch[i].append([(' ', 'PAD', torch.tensor([0., 0., 0., 0.])), 
                                      (' ', ' '),
                                      (' ', 'PAD', torch.tensor([0., 0., 0., 0.]))])
-                to_return.append(tmp)
                 
             current += batch_size
 
         batch = self.data[current:]
-        max_len_in_batch = max([x.shape[0] for x in batch])
+        max_len_in_batch = max([len(x) for x in batch])
         
         for i in range(len(batch)):
-            tmp = F.pad(batch[i], (0, 0, 0, max_len_in_batch - batch[i].shape[0]), "constant", 0)
-            to_return.append(tmp)
-            
-        self.data = to_return
+            for _ in range(max_len_in_batch - len(batch[i])):
+                batch[i].append([(' ', 'PAD', torch.tensor([0., 0., 0., 0.])), 
+                                    (' ', ' '),
+                                    (' ', 'PAD', torch.tensor([0., 0., 0., 0.]))])
 
     def __len__(self):
         return len(self.data)

@@ -62,3 +62,8 @@ def build_label_for_df(df):
             labels = torch.vstack((labels, label))
     
     return labels
+
+def get_lookup(self, path):
+    with open(path, 'r') as file:
+        f = file.read().split('\n')
+    return {f[i]: i + 1 for i in range(len(f))}

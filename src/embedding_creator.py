@@ -22,7 +22,6 @@ class EdgeEmbedding:
     def __init__(self, nlp):
         self.nlp = nlp
         self.labels = list(self.nlp.get_pipe("parser").labels)
-        self.one_hot_encoder = OneHotEncoder([self.labels])
 
     def one_hot(self, keys: Union[str, Iterable]):
         return self.one_hot_encoder.one_hot(keys)
