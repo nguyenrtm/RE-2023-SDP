@@ -13,7 +13,8 @@ class CustomDataset(Dataset):
             if self.data[i] == None:
                 self.data.pop(i)
                 self.labels = torch.vstack((self.labels[:i], self.labels[i+1:]))
-            i += 1
+            else:
+                i += 1
 
     def batch_padding(self, batch_size):
         current = 0

@@ -92,7 +92,7 @@ def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, edge_lookup):
         v = torch.tensor([word1_idx, tag1_idx, direction_idx, edge_idx, word2_idx, tag2_idx])
         v = torch.hstack((v[:2], pos1, v[2:6], pos2))
         if i == 0:
-            to_return = v
+            to_return = v.view(1, -1)
         else:
             to_return = torch.vstack((to_return, v))
         i += 1
