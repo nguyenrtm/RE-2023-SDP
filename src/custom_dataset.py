@@ -42,3 +42,8 @@ class CustomDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
+    
+    def __getitem__(self, idx):
+            sample = self.data[idx]
+            label = self.labels[idx]
+            return sample, label
