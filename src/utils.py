@@ -75,7 +75,7 @@ def lookup(word, dct):
         idx = 0
     return idx
 
-def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, pos_lookup):
+def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, edge_lookup):
     if sent == None:
         return None
     to_return = list()
@@ -86,17 +86,24 @@ def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, pos_lookup):
         tag1_idx = lookup(dp[0][1], tag_lookup)
         tag2_idx = lookup(dp[2][1], tag_lookup)
         direction_idx = lookup(dp[1][0], direction_lookup)
-        edge_idx = lookup(dp[1][1], direction_lookup)
+        edge_idx = lookup(dp[1][1], edge_lookup)
         pos1 = dp[0][2]
         pos2 = dp[2][2]
         v = torch.tensor([word1_idx, tag1_idx, direction_idx, edge_idx, word2_idx, tag2_idx])
         v = torch.hstack((v[:2], pos1, v[2:6], pos2))
-        to_return.append(v)
+        if i == 0:
+            to_return = v
+        else:
+            to_return = torch.vstack((to_return, v))
         i += 1
     return to_return
 
-def get_idx_dataset(data):
+def get_idx_dataset(data,
+                    vocab_lookup,
+                    tag_lookup,
+                    direction_lookup,
+                    edge_lookup):
     tmp = list()
     for i in data:
-        tmp.append(get_idx(i))
+        tmp.append(get_idx(i, vocab_lookup, tag_lookup, direction_lookup, edge_lookup))
     return tmp
