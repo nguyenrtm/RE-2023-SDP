@@ -63,7 +63,7 @@ def build_label_for_df(df):
     
     return labels
 
-def get_lookup(self, path):
+def get_lookup(path):
     with open(path, 'r') as file:
         f = file.read().split('\n')
     return {f[i]: i + 1 for i in range(len(f))}
