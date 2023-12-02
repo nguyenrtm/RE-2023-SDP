@@ -4,10 +4,11 @@ import torch
 
 class SentenceFeatureBuilder:
     def __init__(self,
+                 spacy_features,
                  word_embedding_instance, 
                  padding_size: int = 200,
                  crop_in_between: int = 0):
-        self.preprocesser = SpacyFeatures()
+        self.preprocesser = spacy_features
         self.we = word_embedding_instance 
         self.padding_size = padding_size
         self.crop_in_between = crop_in_between

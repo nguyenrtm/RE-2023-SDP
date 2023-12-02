@@ -37,6 +37,7 @@ class RowToEmbedding:
                 embedding = self.row_to_embedding(row, option)
                 to_return.append(embedding)
             except:
+                print("error at row {}".format(i))
                 to_return.append(None)
             
         return to_return
