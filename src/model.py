@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
-import matplotlib.pyplot as plt
 
 from eval import evaluate_bc5
 
@@ -155,6 +154,7 @@ class Trainer:
         
     def convert_label_to_2d(self, batch_label):
         i = 0
+        batch_label = torch.tensor(batch_label).to(self.device)
         for label in batch_label:
             i += 1
             if label == torch.tensor([0]).to(self.device):
@@ -175,6 +175,8 @@ class Trainer:
         i = 0
 
         for batch_data, batch_label in training_loader:
+            batch_data = torch.tensor(batch_data).to(self.device)
+            batch_label = torch.tensor(batch_label).to(self.device)
             batch_label = self.convert_label_to_2d(batch_label)
             i += 1
             self.optimizer.zero_grad()
@@ -195,6 +197,8 @@ class Trainer:
         
         with torch.no_grad():
             for batch_data, batch_label in validation_loader:
+                batch_data = torch.tensor(batch_data).to(self.device)
+                batch_label = torch.tensor(batch_label).to(self.device)
                 outputs = self.model(batch_data)
                 batch_label_for_loss = self.convert_label_to_2d(batch_label)
                 loss = self.criterion(outputs, batch_label_for_loss)
@@ -287,22 +291,3 @@ class Trainer:
                 lst.append((k, _, "CID"))
 
         return dct, lst
-    
-    def plot_train_test(self, lst_a, lst_b, title):
-        plt.figure(figsize=(10,5))
-        plt.title(title)
-        plt.plot(lst_a,label="Train")
-        plt.plot(lst_b,label="Test")
-        plt.xlabel("iterations")
-        plt.ylabel(title)
-        plt.legend()
-        plt.show()
-        
-    def plot(self, lst_a, title):
-        plt.figure(figsize=(10,5))
-        plt.title(title)
-        plt.plot(lst_a,label="Test")
-        plt.xlabel("iterations")
-        plt.ylabel(title)
-        plt.legend()
-        plt.show()
