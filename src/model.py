@@ -33,8 +33,8 @@ class Model(nn.Module):
         self.edge_embedding = nn.Embedding(edge_number, edge_embedding_size, padding_idx=0)
 
         self.normalize_position = nn.Linear(in_features=position_number,
-                                            out_features=position_embedding_size,
-                                            bias=False)
+                                             out_features=position_embedding_size,
+                                             bias=False)
         
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=1,
@@ -65,7 +65,8 @@ class Model(nn.Module):
 
         self.relu = nn.ReLU()
         self.dense_to_tag = nn.Linear(in_features=conv1_out_channels + conv2_out_channels + conv3_out_channels,
-                                      out_features=2)
+                                      out_features=2,
+                                      bias=False)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
