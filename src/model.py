@@ -33,8 +33,8 @@ class Model(nn.Module):
         self.edge_embedding = nn.Embedding(edge_number, edge_embedding_size, padding_idx=0)
 
         self.normalize_position = nn.Linear(in_features=position_number,
-                                             out_features=position_embedding_size,
-                                             bias=False)
+                                            out_features=position_embedding_size,
+                                            bias=False)
         
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=1,
@@ -96,7 +96,7 @@ class Model(nn.Module):
         x2 = torch.max(x2.squeeze(dim=3), dim=2)[0]
         x3 = torch.max(x3.squeeze(dim=3), dim=2)[0]
 
-        x = torch.cat((x1, x2, x3), dim=1).squeeze()
+        x = torch.cat((x1, x2, x3), dim=1)
         x = self.dense_to_tag(x)
         x = self.softmax(x)
 
@@ -157,7 +157,6 @@ class Trainer:
         
     def convert_label_to_2d(self, batch_label):
         i = 0
-        batch_label = torch.tensor(batch_label).to(self.device)
         for label in batch_label:
             i += 1
             if label == torch.tensor([0]).to(self.device):
@@ -166,7 +165,7 @@ class Trainer:
                 tmp = torch.tensor([0., 1.]).to(self.device)
             
             if i == 1:
-                to_return = tmp
+                to_return = tmp.unsqueeze(0)
             else:
                 to_return = torch.vstack((to_return, tmp))
         
