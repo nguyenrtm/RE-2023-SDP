@@ -33,7 +33,8 @@ class Model(nn.Module):
         self.edge_embedding = nn.Embedding(edge_number, edge_embedding_size, padding_idx=0)
 
         self.normalize_position = nn.Linear(in_features=position_number,
-                                             out_features=position_embedding_size)
+                                             out_features=position_embedding_size,
+                                             bias=False)
         
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=1,
@@ -71,6 +72,7 @@ class Model(nn.Module):
         word_embedding_ent1 = self.w2v(x[:, :, 0].long())
         tag_embedding_ent1 = self.tag_embedding(x[:, :, 1].long())
         position_embedding_ent1 = self.normalize_position(x[:, :, 2:6])
+        position_embedding_ent1 = self.relu(position_embedding_ent1)
 
         direction_embedding = self.direction_embedding(x[:, :, 6].long())
         edge_embedding = self.edge_embedding(x[:, :, 7].long())
@@ -78,6 +80,7 @@ class Model(nn.Module):
         word_embedding_ent2 = self.w2v(x[:, :, 8].long())
         tag_embedding_ent2 = self.tag_embedding(x[:, :, 9].long())
         position_embedding_ent2 = self.normalize_position(x[:, :, 10:14])
+        position_embedding_ent2 = self.relu(position_embedding_ent2)
 
         x = torch.cat((word_embedding_ent1, tag_embedding_ent1, position_embedding_ent1,
                        direction_embedding, edge_embedding,

@@ -23,7 +23,7 @@ class CustomDataset(Dataset):
         while current + batch_size < len(self.data):
             batch = self.data[current:current+batch_size]
 
-            max_len_in_batch = max([x.shape[0] for x in batch])
+            max_len_in_batch = max(max([x.shape[0] for x in batch]), min_batch_size)
 
             for i in range(len(batch)):
                 tmp = F.pad(batch[i], (0, 0, 0, max_len_in_batch - batch[i].shape[0]), "constant", 0)
