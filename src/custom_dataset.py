@@ -11,8 +11,7 @@ class CustomDataset(Dataset):
         i = 0
         while i < len(self.data):
             if self.data[i] == None:
-                self.data.pop(i)
-                self.labels = torch.vstack((self.labels[:i], self.labels[i+1:]))
+                self.data[i] = torch.zeros((1, 14))
             else:
                 i += 1
 
