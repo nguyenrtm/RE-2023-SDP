@@ -17,6 +17,8 @@ class Model(nn.Module):
                  direction_embedding_size: int = 5,
                  edge_number: int = 46,
                  edge_embedding_size: int = 20,
+                 token_embedding_size: int = 500,
+                 dep_embedding_size: int = 200,
                  conv1_out_channels: int = 16,
                  conv2_out_channels: int = 16,
                  conv3_out_channels: int = 16,
@@ -36,10 +38,18 @@ class Model(nn.Module):
                                              out_features=position_embedding_size,
                                              bias=False)
         
+        self.normalize_tokens = nn.Linear(in_features=word_embedding_size+tag_embedding_size+position_embedding_size,
+                                          out_features=token_embedding_size,
+                                          bias=False)
+        
+        self.normalize_dep = nn.Linear(in_features=direction_embedding_size+edge_embedding_size,
+                                       out_features=dep_embedding_size,
+                                       bias=False)
+        
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=1,
                       out_channels=conv1_out_channels,
-                      kernel_size=(conv1_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      kernel_size=(conv1_length, token_embedding_size * 2 + dep_embedding_size),
                       stride=1,
                       bias=False),
             nn.ReLU()
@@ -48,7 +58,7 @@ class Model(nn.Module):
         self.conv2 = nn.Sequential(
             nn.Conv2d(in_channels=1,
                       out_channels=conv2_out_channels,
-                      kernel_size=(conv2_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      kernel_size=(conv2_length, token_embedding_size * 2 + dep_embedding_size),
                       stride=1,
                       bias=False),
             nn.ReLU()
@@ -57,7 +67,7 @@ class Model(nn.Module):
         self.conv3 = nn.Sequential(
             nn.Conv2d(in_channels=1,
                       out_channels=conv3_out_channels,
-                      kernel_size=(conv3_length, word_embedding_size * 2 + tag_embedding_size * 2 + position_embedding_size * 2 + direction_embedding_size + edge_embedding_size),
+                      kernel_size=(conv3_length, token_embedding_size * 2 + dep_embedding_size),
                       stride=1,
                       bias=False),
             nn.ReLU()
@@ -83,9 +93,15 @@ class Model(nn.Module):
         position_embedding_ent2 = self.normalize_position(x[:, :, 10:14])
         position_embedding_ent2 = self.relu(position_embedding_ent2)
 
-        x = torch.cat((word_embedding_ent1, tag_embedding_ent1, position_embedding_ent1,
-                       direction_embedding, edge_embedding,
-                       word_embedding_ent2, tag_embedding_ent2, position_embedding_ent2), dim=2).float()
+        tokens_ent1 = torch.cat((word_embedding_ent1, tag_embedding_ent1, position_embedding_ent1), dim=2).float()
+        tokens_ent2 = torch.cat((word_embedding_ent2, tag_embedding_ent2, position_embedding_ent2), dim=2).float()
+        dep = torch.cat((direction_embedding, edge_embedding), dim=2).float()
+
+        tokens_ent1 = self.normalize_tokens(tokens_ent1)
+        tokens_ent2 = self.normalize_tokens(tokens_ent2)
+        dep = self.normalize_dep(dep)
+
+        x = torch.cat((tokens_ent1, dep, tokens_ent2), dim=2)
 
         x = x.unsqueeze(1)
 
@@ -116,6 +132,8 @@ class Trainer:
                  direction_embedding_size: int = 5,
                  edge_number: int = 46,
                  edge_embedding_size: int = 20,
+                 token_embedding_size: int = 500,
+                 dep_embedding_size: int = 200,
                  conv1_out_channels: int = 16,
                  conv2_out_channels: int = 16,
                  conv3_out_channels: int = 16,
@@ -134,6 +152,8 @@ class Trainer:
                            direction_embedding_size,
                            edge_number,
                            edge_embedding_size,
+                           token_embedding_size,
+                           dep_embedding_size,
                            conv1_out_channels,
                            conv2_out_channels,
                            conv3_out_channels,
