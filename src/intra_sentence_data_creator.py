@@ -136,7 +136,7 @@ class IntraSentenceDataCreator:
         
         return self.add_abs_id_col(df)
     
-        def get_unique_tuple(self, df):
+    def get_unique_tuple(self, df):
         '''
         Return the unique tuples of (sent_id, ent1_id, ent2_id) in the df
         Ambiguous entities are splitted into multiple tuples
