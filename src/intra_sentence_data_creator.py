@@ -4,7 +4,7 @@ class IntraSentenceDataCreator:
     def __init__(self):
         pass
 
-    def split_sentence(text, preprocesser):
+    def split_sentence(self, text, preprocesser):
         '''
         Split text into sentences
         '''
