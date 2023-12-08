@@ -4,21 +4,6 @@ class IntraSentenceDataCreator:
     def __init__(self):
         pass
 
-    def split_sentence(self, text, preprocesser):
-        '''
-        Split text into sentences
-        '''
-        sent_lst_prev = preprocesser.sentTokenizer(text)
-        sent_lst_curr = list()
-
-        while len(sent_lst_prev) != len(sent_lst_curr):
-            sent_lst_curr = sent_lst_prev
-            sent_lst_curr = list()
-            for i in range(len(sent_lst_prev)):
-                sent_lst_curr.extend(preprocesser.sentTokenizer(sent_lst_prev[i]))
-
-        return sent_lst_prev, sent_lst_curr
-
     def get_data(self, abstract, entity, relation, preprocesser):
         from tqdm import tqdm
 
