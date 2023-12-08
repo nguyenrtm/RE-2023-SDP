@@ -180,7 +180,7 @@ class IntraSentenceDataCreator:
 
         return dct
 
-    def plot_frequency(lookup):
+    def plot_frequency(self, lookup):
         from collections import Counter
         import matplotlib.pyplot as plt
         freq_lst = list()
