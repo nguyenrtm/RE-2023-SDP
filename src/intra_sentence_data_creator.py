@@ -103,6 +103,18 @@ class IntraSentenceDataCreator:
             for sent in text:
                 if sent[0] == sent_id:
                     return sent[1]
+    
+    def add_abs_id_col(self, df):
+        '''
+        Add abstract ID to each row in dataframe
+        '''
+        abs = list()
+        for i in range(len(df)):
+            abs_id = df.iloc[i]['sent_id'].split('_')[0]
+            abs.append(abs_id)
+        
+        df.insert(loc=0, column='abs_id', value=abs)
+        return df
 
     def convert_to_df(self, intra_abstract, intra_pair):
         '''
@@ -122,4 +134,49 @@ class IntraSentenceDataCreator:
                 row = [row[0]] + [sent_tmp] + row[1:]
                 df.loc[len(df.index)] = row
         
-        return df
+        return self.add_abs_id_col(df)
+    
+        def get_unique_tuple(self, df):
+        '''
+        Return the unique tuples of (sent_id, ent1_id, ent2_id) in the df
+        Ambiguous entities are splitted into multiple tuples
+        '''
+        all_tuple = list()
+        for i in range(len(df)):
+            ent1_id_lst = df.iloc[i]['ent1_id'].split('|')
+            ent2_id_lst = df.iloc[i]['ent2_id'].split('|')
+            for x in ent1_id_lst:
+                for y in ent2_id_lst:
+                    if x != '-1' and y != '-1':
+                        all_tuple.append((df.iloc[i]['abs_id'], x, y))
+        return sorted(set(all_tuple), key=all_tuple.index)
+                
+    def get_all_tuple(self, df):
+        '''
+        Get all tuples of (sent_id, ent1_id, ent2_id)
+        Each row in df is a list of tuples in returned list
+        '''
+        all_tuple = list()
+        for i in range(len(df)):
+            ent1_id_lst = df.iloc[i]['ent1_id'].split('|')
+            ent2_id_lst = df.iloc[i]['ent2_id'].split('|')
+            tmp = list()
+            for x in ent1_id_lst:
+                for y in ent2_id_lst:
+                    tmp.append((df.iloc[i]['abs_id'], x, y))
+            all_tuple.append(tmp)
+
+        return all_tuple
+    
+    def get_candidate(self, df):
+        unique_tuple = self.get_unique_tuple(df)
+        all_tuple = self.get_all_tuple(df)
+        dct = {}
+        for tpl in unique_tuple:
+            tmp = list()
+            for i in range(len(all_tuple)):
+                if tpl in all_tuple[i]:
+                    tmp.append(i)
+            dct[tpl] = tmp
+
+        return dct

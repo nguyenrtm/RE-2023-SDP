@@ -1,4 +1,5 @@
 import networkx as nx
+import spacy
 
 class DependencyParser:
     def __init__(self, nlp):
@@ -10,9 +11,16 @@ class DependencyParser:
         for token in doc:
             for child in token.children:
                 edges.append((token.i, child.i))
-        graph = nx.Graph(edges)
+        G = nx.Graph(edges)
 
-        return graph
+        return G
+
+    def render(self, text):
+        doc = self.nlp(text)
+        spacy.displacy.render(doc, style="dep", jupyter=True, options={"compact": True})
+
+    def draw(self, G):
+        nx.draw_networkx_edges(G, pos=nx.planar_layout(G))
 
     def get_sdp(self,
                 text,
