@@ -180,3 +180,21 @@ class IntraSentenceDataCreator:
             dct[tpl] = tmp
 
         return dct
+
+    def plot_frequency(lookup):
+        from collections import Counter
+        import matplotlib.pyplot as plt
+        freq_lst = list()
+        for k, v in lookup.items():
+            freq_lst.append(len(v))
+        counts = Counter(freq_lst)
+        integers = list(counts.keys())
+        frequencies = list(counts.values()) 
+
+        # Plot the histogram
+        plt.figure(figsize=(12, 9))
+        plt.bar(integers, frequencies)
+        plt.xlabel("Number")
+        plt.ylabel("Frequency")
+        plt.title("Number of intra-sentence candidates per chemical-disease pair (train set)")
+        plt.show()
