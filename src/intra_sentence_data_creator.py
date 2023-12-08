@@ -16,20 +16,20 @@ class IntraSentenceDataCreator:
             sent_lst_curr = list()
             for i in range(len(sent_lst_prev)):
                 sent_lst_curr.extend(preprocesser.sentTokenizer(sent_lst_prev[i]))
-            
+
         return sent_lst_prev, sent_lst_curr
 
     def get_data(self, abstract, entity, relation, preprocesser):
         from tqdm import tqdm
-    
+
         abstract_out = []
         entity_out = []
         relation_out = []
         pair_out = []
         sentences_out = []
-        
+
         for index in tqdm(abstract):
-            
+
             sent_abstract_split = []
             sent_abstract = []
             sent_entity = []
@@ -39,13 +39,13 @@ class IntraSentenceDataCreator:
             text = abstract[index]['t'] + " " + abstract[index]['a']
 
             # Add abstract of splitted sentences
-            sent_abstract_split = self.split_sentence(text, preprocesser)
+            sent_abstract_split = preprocesser.sentTokenizer(text)
             sentences_out.append(sent_abstract_split)
 
             for i in range(len(sent_abstract_split)):
                 tmp = (index + "_" + str(i), sent_abstract_split[i])
                 sent_abstract.append(tmp)
-                
+
             # Add entities of splitted sentences
             sent_length = []
             length_counter = 0
@@ -60,7 +60,7 @@ class IntraSentenceDataCreator:
                     length_counter += len(i[1]) + 1
                     sent_length.append(length_counter)
                     sent_pos += 1
-                    
+
             for i in entity[index]:
                 sent_pos = 0
                 place = i[1]
@@ -73,7 +73,7 @@ class IntraSentenceDataCreator:
                     tmp[2] -= sent_length[sent_pos - 1] + 1
                 i = tuple(tmp)
                 sent_entity.append(i)
-            
+
             # Add relations of splitted sentences
             for r in relation[index]:
                 for e1 in sent_entity:
@@ -90,25 +90,25 @@ class IntraSentenceDataCreator:
                 if e1[4] == 'Chemical':
                     for e2 in sent_entity:
                         if e1[0] == e2[0] and e2[4] == 'Disease':
-                            tmp = (e1[0], e1[1], e1[2], e1[3], e1[4], e1[5], 
+                            tmp = (e1[0], e1[1], e1[2], e1[3], e1[4], e1[5],
                                 e2[1], e2[2], e2[3], e2[4], e2[5], 0)
                             sent_pair.append(tmp)
 
-            for i in range(len(sent_pair)): 
+            for i in range(len(sent_pair)):
                 for r in sent_relation:
                     if sent_pair[i][5] == r[2] and sent_pair[i][10] == r[3]:
                         sent_pair[i] = list(sent_pair[i])
                         sent_pair[i][11] = 1
                         sent_pair[i] = tuple(sent_pair[i])
-            
+
             # Add data of document to dataset
             abstract_out.append(sent_abstract)
             entity_out.append(sent_entity)
             relation_out.append(sent_relation)
             pair_out.append(sent_pair)
-        
+
         return abstract_out, entity_out, relation_out, pair_out
-    
+
     def find_sent_given_id(self, intra_abstract, sent_id):
         '''
         Find sentence given sentence ID
@@ -117,7 +117,7 @@ class IntraSentenceDataCreator:
             for sent in text:
                 if sent[0] == sent_id:
                     return sent[1]
-    
+
     def add_abs_id_col(self, df):
         '''
         Add abstract ID to each row in dataframe
@@ -126,20 +126,20 @@ class IntraSentenceDataCreator:
         for i in range(len(df)):
             abs_id = df.iloc[i]['sent_id'].split('_')[0]
             abs.append(abs_id)
-        
+
         df.insert(loc=0, column='abs_id', value=abs)
         return df
 
     def convert_to_df(self, intra_abstract, intra_pair):
         '''
-        Given information about intra-sentence entities and relations, 
+        Given information about intra-sentence entities and relations,
         return dataframe to display intra-sentence relation labels
         '''
 
-        df = pd.DataFrame(columns=['sent_id', 'text', 'ent1_start', 'ent1_end', 
-                                   'ent1_name', 'ent1_type', 'ent1_id', 'ent2_start', 
+        df = pd.DataFrame(columns=['sent_id', 'text', 'ent1_start', 'ent1_end',
+                                   'ent1_name', 'ent1_type', 'ent1_id', 'ent2_start',
                                    'ent2_end', 'ent2_name', 'ent2_type', 'ent2_id', 'label'])
-        
+
         for text in intra_pair:
             for sent in text:
                 sent_id = sent[0]
@@ -147,9 +147,9 @@ class IntraSentenceDataCreator:
                 row = list(sent)
                 row = [row[0]] + [sent_tmp] + row[1:]
                 df.loc[len(df.index)] = row
-        
+
         return self.add_abs_id_col(df)
-    
+
     def get_unique_tuple(self, df):
         '''
         Return the unique tuples of (sent_id, ent1_id, ent2_id) in the df
@@ -164,7 +164,7 @@ class IntraSentenceDataCreator:
                     if x != '-1' and y != '-1':
                         all_tuple.append((df.iloc[i]['abs_id'], x, y))
         return sorted(set(all_tuple), key=all_tuple.index)
-                
+
     def get_all_tuple(self, df):
         '''
         Get all tuples of (sent_id, ent1_id, ent2_id)
@@ -181,7 +181,7 @@ class IntraSentenceDataCreator:
             all_tuple.append(tmp)
 
         return all_tuple
-    
+
     def get_candidate(self, df):
         unique_tuple = self.get_unique_tuple(df)
         all_tuple = self.get_all_tuple(df)
@@ -203,7 +203,7 @@ class IntraSentenceDataCreator:
             freq_lst.append(len(v))
         counts = Counter(freq_lst)
         integers = list(counts.keys())
-        frequencies = list(counts.values()) 
+        frequencies = list(counts.values())
 
         # Plot the histogram
         plt.figure(figsize=(12, 9))
