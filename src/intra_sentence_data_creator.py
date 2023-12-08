@@ -4,6 +4,21 @@ class IntraSentenceDataCreator:
     def __init__(self):
         pass
 
+    def split_sentence(text, preprocesser):
+        '''
+        Split text into sentences
+        '''
+        sent_lst_prev = preprocesser.sentTokenizer(text)
+        sent_lst_curr = list()
+
+        while len(sent_lst_prev) != len(sent_lst_curr):
+            sent_lst_curr = sent_lst_prev
+            sent_lst_curr = list()
+            for i in range(len(sent_lst_prev)):
+                sent_lst_curr.extend(preprocesser.sentTokenizer(sent_lst_prev[i]))
+            
+        return sent_lst_prev, sent_lst_curr
+
     def get_data(self, abstract, entity, relation, preprocesser):
         from tqdm import tqdm
     
@@ -24,8 +39,7 @@ class IntraSentenceDataCreator:
             text = abstract[index]['t'] + " " + abstract[index]['a']
 
             # Add abstract of splitted sentences
-            sent_abstract_split = preprocesser.sentTokenizer(abstract[index]['a'])
-            sent_abstract_split.insert(0, abstract[index]['t'])
+            sent_abstract_split = self.split_sentence(text, preprocesser)
             sentences_out.append(sent_abstract_split)
 
             for i in range(len(sent_abstract_split)):
