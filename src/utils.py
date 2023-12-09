@@ -129,14 +129,15 @@ def prepare_training(lookup, X):
     Returns:
         list of tensors
     '''
-    to_return = []
+    to_return = dict()
 
     for k, v in lookup.items():
         tmp = []
         for i in v:
             if X[i] != None:
                 tmp.append(X[i])
-        tmp = torch.cat(tmp, dim=0)
-        to_return.append(tmp)
+        if tmp != []:
+            tmp = torch.cat(tmp, dim=0)
+            to_return[k] = tmp
 
     return to_return
