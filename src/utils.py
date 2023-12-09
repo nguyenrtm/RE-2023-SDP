@@ -54,6 +54,9 @@ def dump_pkl(obj, path):
         pkl.dump(obj, file)
 
 def build_label_for_df(df):
+    '''
+    Build label for dataframe
+    '''
     for i in range(len(df)):
         label = torch.tensor([df.iloc[i]['label']]).type(torch.FloatTensor)
         if i == 0:
@@ -64,11 +67,17 @@ def build_label_for_df(df):
     return labels
 
 def get_lookup(path):
+    '''
+    Get lookup table from file
+    '''
     with open(path, 'r') as file:
         f = file.read().split('\n')
     return {f[i]: i + 1 for i in range(len(f))}
 
 def lookup(word, dct):
+    '''
+    Get index of word in lookup table
+    '''
     try: 
         idx = dct[word]
     except:
@@ -76,6 +85,9 @@ def lookup(word, dct):
     return idx
 
 def get_idx(sent, vocab_lookup, tag_lookup, direction_lookup, edge_lookup):
+    '''
+    Get index of features of tokens in sentence
+    '''
     if sent == None:
         return None
     to_return = list()
@@ -107,3 +119,24 @@ def get_idx_dataset(data,
     for i in data:
         tmp.append(get_idx(i, vocab_lookup, tag_lookup, direction_lookup, edge_lookup))
     return tmp
+
+def prepare_training(lookup, X):
+    '''
+    Get training tensors from lookup table and X for swCNN
+    Args:
+        lookup: lookup table
+        X: list of tensors
+    Returns:
+        list of tensors
+    '''
+    to_return = []
+
+    for k, v in lookup.items():
+        tmp = []
+        for i in v:
+            if X[i] != None:
+                tmp.append(X[i])
+        tmp = torch.cat(tmp, dim=0)
+        to_return.append(tmp)
+
+    return to_return

@@ -195,5 +195,5 @@ class IntraSentenceDataCreator:
         plt.bar(integers, frequencies)
         plt.xlabel("Number")
         plt.ylabel("Frequency")
-        plt.title("Number of intra-sentence candidates per chemical-disease pair (train set)")
+        plt.title("Number of intra-sentence candidates per chemical-disease pair")
         plt.show()
