@@ -120,24 +120,51 @@ def get_idx_dataset(data,
         tmp.append(get_idx(i, vocab_lookup, tag_lookup, direction_lookup, edge_lookup))
     return tmp
 
-def prepare_training(lookup, X):
+def prepare_dict_simul_paths(lookup, X, y):
     '''
-    Get training tensors from lookup table and X for swCNN
+    Get training tensors from lookup table and X for simultaneous paths approach
     Args:
         lookup: lookup table
         X: list of tensors
     Returns:
         list of tensors
     '''
-    to_return = dict()
+    to_return_dict = dict()
 
     for k, v in lookup.items():
         tmp = []
         for i in v:
             if X[i] != None:
                 tmp.append(X[i])
+            label = y[i]
         if tmp != []:
-            tmp = torch.cat(tmp, dim=0)
-            to_return[k] = tmp
+            to_return_dict[k] = (tmp, label)
 
-    return to_return
+    return to_return_dict
+def get_tensors_simul_paths(lookup: dict,
+                            select_option: str,
+                            top_k: int):
+    '''
+    Get top k paths and convert to tensors for simultaneous paths approach
+    Args:
+        lookup: lookup table
+        select_option: select method, could be "random", "shortest", "longest"
+        top_k: number of paths to select
+    Returns:
+        X: dataset of tensors
+        y: labels
+    '''
+    from tqdm import tqdm
+
+    X = list()
+    y = list()
+    for k, v in tqdm(lookup.items()):
+        X_tmp = v[0]
+        y_tmp = v[1]
+        if select_option == "random":
+            if top_k < len(X_tmp):
+                X_tmp = X_tmp[:top_k]
+        X.append(X_tmp)
+        y.append(y_tmp)
+
+    return X, y
